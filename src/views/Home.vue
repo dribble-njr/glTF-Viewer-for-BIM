@@ -1,5 +1,5 @@
 <template>
-  <div id="home">s</div>
+  <div id="home"></div>
 </template>
 
 <script>
@@ -14,6 +14,7 @@ export default {
   },
   mounted() {
     this.base3d = new Base3d("home");
+    this.base3d.loadModel();
   }
 };
 </script>

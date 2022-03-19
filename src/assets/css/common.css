@@ -2,3 +2,13 @@
   margin: 0;
   padding: 0;
 }
+
+.home {
+	margin: 0;
+	background-color: #fff;
+	color: #fff;
+	font-family: Monospace;
+	font-size: 13px;
+	line-height: 24px;
+	overscroll-behavior: none;
+}

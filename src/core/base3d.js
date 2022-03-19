@@ -1,8 +1,12 @@
 import * as THREE from "three";
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+// import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+// import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
 import throttle from "@/utils/throttle";
+// import { getExtension } from "@/utils/common.js";
 
 class Base3d {
   constructor(id) {
@@ -10,10 +14,8 @@ class Base3d {
     this.scene;
     this.camera;
     this.renderer;
-    this.model;
+    this.stats;
 
-    // TODO 状态监控
-    // this.stats = document.getElementById(statsId);
     this.init();
     this.animate();
   }
@@ -21,11 +23,11 @@ class Base3d {
   init() {
     this.initScene();
     this.initCamera();
+    this.initLight();
+    this.initAxes();
     this.initRenderer();
     this.initControls();
-
-    // 添加物体
-    this.addMesh();
+    this.initStats();
 
     // 监听场景大小改变，调整渲染尺寸
     window.addEventListener("resize", throttle(this.onWindowResize.bind(this), 50, {
@@ -36,7 +38,10 @@ class Base3d {
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color( 0xbfe3dd );
+    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    mesh.rotation.x = - Math.PI / 2;
+    mesh.receiveShadow = true;
+		this.scene.add(mesh);
   }
 
   initCamera() {
@@ -46,17 +51,34 @@ class Base3d {
       1,
       1000
     );
-    this.camera.position.set(5, 2, 8);
+    this.camera.position.set(1, 2, -3);
+    this.camera.lookAt(0, 1, 0);
+  }
+
+  initLight() {
+    // 环境光
+    const ambLight = new THREE.AmbientLight(0xcccccc);
+    this.scene.add(ambLight);
+
+    // 平行光
+    const dirLight = new THREE.DirectionalLight(0xaabbff, 0.3);
+    dirLight.position.set(-3, 10, -10);
+    this.scene.add(dirLight);
+  }
+
+  initAxes() {
+    const axes = new THREE.AxesHelper(30);
+    this.scene.add(axes);
   }
 
   initRenderer() {
-    this.renderer = new THREE.WebGL1Renderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
     // 设置屏幕像素比
     this.renderer.setPixelRatio(window.devicePixelRatio);
     // 渲染尺寸大小
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-
     this.container.appendChild(this.renderer.domElement);
+    this.renderer.outputEncoding = THREE.sRGBEncoding;
   }
 
   initControls() {
@@ -65,26 +87,58 @@ class Base3d {
     controls.update();
     controls.enablePan = false;
     controls.enableDamping = true;
+    // controls.maxPolarAngle = 0.9 * Math.PI / 2;
+		// controls.enableZoom = false;
   }
 
-  setModel(modelName) {
-    const loader = new GLTFLoader().setPath("files/gltf/");
-    loader.load(modelName, gltf => {
-      this.model = gltf.scene.children[0];
-      this.scene.add(this.model);
-    })
+  initStats() {
+    this.stats = new Stats();
+		this.container.appendChild(this.stats.dom);
   }
-  
-  addMesh() {
-    this.setModel("bag2.glb");
+
+  loadModel() {
+    // const suffix = getExtension(name);
+    let loader = new GLTFLoader();
+
+    // switch(suffix) {
+    //   case "json": {
+    //     loader = new THREE.ObjectLoader().setPath("files/json/");
+    //     break;
+    //   }
+      
+    //   case "glb": {
+    //     loader = new GLTFLoader().setPath("files/glb/");
+    //     break;
+    //   }
+
+    //   case "obj": {
+    //     loader = new OBJLoader().setPath("files/obj");
+    //     break;
+    //   }
+
+    //   default:
+    //     break;
+    // }
+    
+    loader.load("files/glb/Soldier.glb", obj => {
+      // obj.scale.multiplyScalar(5);
+      console.log(obj);
+      this.scene.add(obj.scene);
+      // this.scene.traverse(children => {
+      //   obj.push(children)
+      // })
+    })
   }
 
   animate() {
     this.renderer.setAnimationLoop(this.render.bind(this));
+    this.stats.update();
   }
 
   render() {
+    this.stats.begin();
     this.renderer.render(this.scene, this.camera);
+    this.stats.end();
   }
 
   onWindowResize() {
