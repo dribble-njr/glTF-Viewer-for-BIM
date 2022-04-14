@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+// import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 // import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 // import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
@@ -38,7 +38,7 @@ class Base3d {
 
   initScene() {
     this.scene = new THREE.Scene();
-    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
     mesh.rotation.x = - Math.PI / 2;
     mesh.receiveShadow = true;
 		this.scene.add(mesh);
@@ -46,12 +46,12 @@ class Base3d {
 
   initCamera() {
     this.camera = new THREE.PerspectiveCamera(
-      45,
+      75,
       window.innerWidth / window.innerHeight,
       1,
       1000
     );
-    this.camera.position.set(1, 2, -3);
+    this.camera.position.set(100, 200, -300);
     this.camera.lookAt(0, 1, 0);
   }
 
@@ -98,7 +98,7 @@ class Base3d {
 
   loadModel() {
     // const suffix = getExtension(name);
-    let loader = new GLTFLoader();
+    let loader = new THREE.ObjectLoader();
 
     // switch(suffix) {
     //   case "json": {
@@ -120,13 +120,17 @@ class Base3d {
     //     break;
     // }
     
-    loader.load("files/glb/Soldier.glb", obj => {
-      // obj.scale.multiplyScalar(5);
+    loader.load("files/json/bim.json", obj => {
+      obj.scale.multiplyScalar(0.01);
       console.log(obj);
-      this.scene.add(obj.scene);
+      this.scene.add(obj);
       // this.scene.traverse(children => {
       //   obj.push(children)
       // })
+    }, xhr => {
+      console.log( (xhr.loaded / xhr.total) * 100 + '% loaded');
+    }, err => {
+      console.log(err);
     })
   }
 
