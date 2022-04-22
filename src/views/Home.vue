@@ -3,20 +3,27 @@
 </template>
 
 <script>
-import Base3d from "@/core/base3d";
+import Viewer from "@/core/viewer.js";
 
 export default {
   name: "Home",
   data() {
     return {
-      base3d: null,
+      viewer: null,
+      viewerEl: null
     }
   },
   mounted() {
-    this.base3d = new Base3d("home");
-    this.base3d.loadModel();
+    this.viewerEl = document.getElementById("home");
+    this.viewer = new Viewer(this.viewerEl);
+    this.viewer.load('files/gltf/NewProject.gltf');
   }
 };
 </script>
 
-<style></style>
+<style scoped>
+#home {
+  width: 100vw;
+  height: 100vh;
+}
+</style>
