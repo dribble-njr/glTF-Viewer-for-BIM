@@ -10,6 +10,10 @@ class Viewer {
     this.el = el;
 
     this.content = null;
+
+    this.mouse = new THREE.Vector2();
+    this.raycaster = new THREE.Raycaster();
+    this.intersected;
     
     this.stats = new Stats();
     Array.prototype.forEach.call(this.stats.dom.children, (child) => (child.style.display = ''));
@@ -39,6 +43,9 @@ class Viewer {
         trailing: true,
       })
     );
+
+    // 监听点击事件
+    window.addEventListener("click", this.onMouseClick.bind(this));
   }
 
   animate() {
@@ -59,6 +66,31 @@ class Viewer {
     this.camera.aspect = clientWidth / clientHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(clientWidth, clientHeight);
+  }
+
+  onMouseClick(event) {
+    // 二维坐标转换为空间坐标
+    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    
+    // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+
+    const intersects = this.raycaster.intersectObjects(this.scene.children);
+    console.log(intersects);
+
+    if (intersects.length > 0) {
+      if (this.intersected != intersects[0].object) {
+        if (this.intersected) this.intersected.material.emissive.setHex(this.intersected.currentHex);
+
+        this.intersected = intersects[0].object;
+        this.intersected.currentHex = this.intersected.material.emissive.getHex();
+        this.intersected.material.emissive.setHex(0xff0000);
+      }
+    } else {
+      if (this.intersected) this.intersected.material.emissive.setHex(this.intersected.currentHex);
+      this.intersected = null;
+    }
   }
 
   load(url) {
