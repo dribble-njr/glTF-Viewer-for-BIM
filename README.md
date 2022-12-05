@@ -1,4 +1,4 @@
-# three-model
+# glTF Viewer for BIM
 
 首先使用 Revit 二次开发技术将 revit 模型转换为 glTF 2.0 格式，对其进行数模分离、Draco 压缩，然后使用 Three.js 渲染 BIM 模型。
 

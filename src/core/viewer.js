@@ -9,6 +9,7 @@ import {
   LoaderUtils,
   LoadingManager,
   Mesh,
+  MeshLambertMaterial,
   PerspectiveCamera,
   Raycaster,
   Scene,
@@ -104,6 +105,7 @@ class Viewer {
     this.mouse = new Vector2()
     this.raycaster = new Raycaster()
     this.intersected
+    this.originMaterial
 
     this.addAxesHelper()
     this.addGUI()
@@ -156,28 +158,34 @@ class Viewer {
   /**
    * 点击交互
    */
-  onMouseClick(event) {
+  onMouseClick(e) {
     // FIXME 点击无效
     // 二维坐标转换为空间坐标
-    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1
-    
+    // 点击偏移问题
+    // https://blog.csdn.net/u013090676/article/details/77188088
+    const canvas = document.querySelector('.viewer')
+    this.mouse.x = ((e.clientX - canvas.getBoundingClientRect().left) / canvas.offsetWidth) * 2 - 1
+    this.mouse.y = - ((e.clientY - canvas.getBoundingClientRect().top) / canvas.offsetHeight) * 2 + 1
+
     // 通过鼠标点的位置和当前相机的矩阵计算出raycaster
     this.raycaster.setFromCamera(this.mouse, this.camera)
-
+    // 获取与射线相交的对象数组
     const intersects = this.raycaster.intersectObjects(this.scene.children)
-    console.log(intersects)
 
     if (intersects.length > 0) {
       if (this.intersected != intersects[0].object) {
-        if (this.intersected) this.intersected.material.emissive.setHex(this.intersected.currentHex)
+        if (this.intersected) this.intersected.material = this.originMaterial
 
         this.intersected = intersects[0].object
-        this.intersected.currentHex = this.intersected.material.emissive.getHex()
-        this.intersected.material.emissive.setHex(0xff0000)
+        this.originMaterial = this.intersected.material
+        const material = new MeshLambertMaterial({
+          color: 0xff0000,
+          opacity: 0.8
+        })
+        this.intersected.material = material
       }
     } else {
-      if (this.intersected) this.intersected.material.emissive.setHex(this.intersected.currentHex)
+      if (this.intersected) this.intersected.material = this.originMaterial
       this.intersected = null
     }
   }
@@ -237,8 +245,9 @@ class Viewer {
 
         // See: https://github.com/google/draco/issues/349
         // DRACOLoader.releaseDecoderModule();
-        getSceneModelFaceNum(this.scene)
+
         resolve(gltf)
+        getSceneModelFaceNum(this.scene)
       }, xhr => {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
       }, reject)
