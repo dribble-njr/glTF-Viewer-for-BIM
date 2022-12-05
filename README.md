@@ -1,24 +1,16 @@
-# model-explorer
+# three-model
 
-## Project setup
-```
+首先使用 Revit 二次开发技术将 revit 模型转换为 glTF 2.0 格式，对其进行数模分离、Draco 压缩，然后使用 Three.js 渲染 BIM 模型。
+
+## 快速开始
+
+```shell
 npm install
+npm run dev
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 参考资源
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- [three-gltf-viewer](https://github.com/donmccurdy/three-gltf-viewer)
+- [THREE.GLTFLoader](https://github.com/mrdoob/three.js/blob/dev/examples/js/loaders/GLTFLoader.js)
+- [glTF 2.0 Specification](https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md)
