@@ -106,6 +106,7 @@ class Viewer {
     this.raycaster = new Raycaster()
     this.intersected
     this.originMaterial
+    this.json
 
     this.addAxesHelper()
     this.addGUI()
@@ -159,7 +160,6 @@ class Viewer {
    * 点击交互
    */
   onMouseClick(e) {
-    // FIXME 点击无效
     // 二维坐标转换为空间坐标
     // 点击偏移问题
     // https://blog.csdn.net/u013090676/article/details/77188088
@@ -174,8 +174,10 @@ class Viewer {
 
     if (intersects.length > 0) {
       if (this.intersected != intersects[0].object) {
+        // 点击其他构件，恢复之前材质
         if (this.intersected) this.intersected.material = this.originMaterial
 
+        // 更新当前选中构件
         this.intersected = intersects[0].object
         this.originMaterial = this.intersected.material
         const material = new MeshLambertMaterial({
@@ -183,8 +185,15 @@ class Viewer {
           opacity: 0.8
         })
         this.intersected.material = material
+
+        for (let i = 0; i < this.json.length; i++) {
+          if (this.intersected.userData.UniqueId === this.json[i].UniqueId) {
+            console.log(this.json[i].Parameters)
+          }
+        }
       }
     } else {
+      // 点击空白处 取消选中
       if (this.intersected) this.intersected.material = this.originMaterial
       this.intersected = null
     }
@@ -248,6 +257,20 @@ class Viewer {
 
         resolve(gltf)
         getSceneModelFaceNum(this.scene)
+
+        let file
+        if (assetMap.size === 3) {
+          for (const [key, value] of assetMap) {
+            if (key.indexOf('json') != -1) file = value
+          }
+        }
+    
+        var reader = new FileReader()
+        reader.addEventListener('loadend', e => {
+          this.json = JSON.parse(e.target.result)
+        })
+        reader.readAsText(file)
+        
       }, xhr => {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
       }, reject)
