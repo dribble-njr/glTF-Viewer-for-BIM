@@ -63,10 +63,41 @@ header h1 {
   font-size: 1.4rem;
 }
 
+header h1,
+header .item,
+header .separator {
+  color: #F5F5F5;
+  font-weight: 300;
+  line-height: 4rem;
+  margin: 0;
+}
+
+header .separator {
+  margin: 0 0.2em;
+  opacity: 0.2;
+}
+
+header h1 + .separator {
+  margin-left: 1em;
+}
+
 header h1 > a {
   color: inherit;
   font-size: inherit;
   text-decoration: inherit;
+}
+
+header .item {
+  padding: 0 1em;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: background ease 0.2s;
+
+  -webkit-app-region: no-drag;
+}
+
+header .item:hover {
+  background: #444;
 }
 
 /* .flex-grow {

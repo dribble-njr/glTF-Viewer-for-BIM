@@ -8,8 +8,10 @@ import {
   LinearEncoding,
   LoaderUtils,
   LoadingManager,
+  LOD,
   Mesh,
   MeshLambertMaterial,
+  Object3D,
   PerspectiveCamera,
   Raycaster,
   Scene,
@@ -108,6 +110,9 @@ class Viewer {
     this.originMaterial
     this.json
 
+    // lod
+    this.lod = null
+
     this.addAxesHelper()
     this.addGUI()
 
@@ -136,6 +141,7 @@ class Viewer {
   }
 
   render() {
+    if (this.lod) this.lod.update(this.camera)
     this.renderer.render(this.scene, this.camera)
     if (this.state.grid) {
       this.axesCamera.position.copy(this.camera.position)
@@ -172,6 +178,10 @@ class Viewer {
     // 获取与射线相交的对象数组
     const intersects = this.raycaster.intersectObjects(this.scene.children)
 
+    // FIXME LOD 时选中只有在最高等级才生效
+    console.log(this.intersected === intersects[0].object)
+    console.log(this.intersected)
+
     if (intersects.length > 0) {
       if (this.intersected != intersects[0].object) {
         // 点击其他构件，恢复之前材质
@@ -186,9 +196,11 @@ class Viewer {
         })
         this.intersected.material = material
 
-        for (let i = 0; i < this.json.length; i++) {
-          if (this.intersected.userData.UniqueId === this.json[i].UniqueId) {
-            console.log(this.json[i].Parameters)
+        if (this.json) {
+          for (let i = 0; i < this.json.length; i++) {
+            if (this.intersected.userData.UniqueId === this.json[i].UniqueId) {
+              console.log(this.json[i].Parameters)
+            }
           }
         }
       }
@@ -258,22 +270,65 @@ class Viewer {
         resolve(gltf)
         getSceneModelFaceNum(this.scene)
 
+        // 解析属性
         let file
         if (assetMap.size === 3) {
           for (const [key, value] of assetMap) {
             if (key.indexOf('json') != -1) file = value
           }
+
+          const reader = new FileReader()
+          reader.addEventListener('loadend', e => {
+            this.json = JSON.parse(e.target.result)
+          })
+          reader.readAsText(file)
         }
-    
-        var reader = new FileReader()
-        reader.addEventListener('loadend', e => {
-          this.json = JSON.parse(e.target.result)
-        })
-        reader.readAsText(file)
-        
       }, xhr => {
         console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
       }, reject)
+    })
+  }
+
+  loadLod() {
+    return new Promise((resolve, reject) => {
+      // 3 个等级的细节层次
+      const details = new Array(3).fill(new Object3D())
+
+      const loader = new GLTFLoader()
+      loader.setCrossOrigin('anonymous')
+
+      // A loader for geometry compressed with the Draco library.
+      // 如用 draco 压缩，则必须设置 dracoLoader
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('/draco/')
+      loader.setDRACOLoader(dracoLoader)
+
+      loader.load('models/lod-15.gltf', (gltf) => {
+        details[0] = gltf.scene || gltf.scenes[0]
+
+        loader.load('models/lod-8.gltf', (gltf) => {
+          details[1] = gltf.scene || gltf.scenes[0]
+          
+          loader.load('models/lod-0.gltf', (gltf) => {
+            details[2] = gltf.scene || gltf.scenes[0]
+            
+            this.lod = new LOD()
+            
+            for ( let i = 0; i < details.length; i ++ ) {
+              const mesh = details[i]
+              mesh.updateMatrix()
+              mesh.matrixAutoUpdate = false
+              this.lod.addLevel(mesh, i * 10000)
+					  }
+
+            this.lod.updateMatrix()
+            this.lod.matrixAutoUpdate = false
+            this.setContent(this.lod)
+
+            resolve(this.lod)
+          })
+        })
+      })
     })
   }
 

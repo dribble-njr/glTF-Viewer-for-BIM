@@ -7,9 +7,15 @@ class App {
     this.viewerEl = null
     this.spinnerEl = document.querySelector('.spinner')
     this.dropEl = document.querySelector('.dropzone')
+    this.lodLinkEl = document.querySelector('#lod-link')
+    this.lodViewerEl = null
     
     this.createDropzone()
     this.hideSpinner()
+
+    this.lodLinkEl.addEventListener('click', () => {
+      this.createLod()
+    })
   }
 
   createDropzone() {
@@ -115,7 +121,7 @@ class App {
       })
   }
 
-  createViewer () {
+  createViewer() {
     this.viewerEl = document.createElement('div')
     this.viewerEl.classList.add('viewer')
     this.dropEl.innerHTML = ''
@@ -125,7 +131,31 @@ class App {
     return this.viewer;
   }
 
-  onError (error) {
+  createLod() {
+    this.lodViewerEl = document.createElement('div')
+    this.lodViewerEl.classList.add('viewer')
+    this.dropEl.innerHTML = ''
+    this.dropEl.appendChild(this.lodViewerEl)
+
+    if (this.viewer) {
+      this.viewer.clear()
+      this.viewer = null
+    }
+
+    const viewer = new Viewer(this.lodViewerEl)
+
+    this.showSpinner()
+
+    viewer
+      .loadLod()
+      .catch((e) => this.onError(e))
+      .then((res) => {
+        console.log(res)
+        this.hideSpinner()
+      })
+  }
+
+  onError(error) {
     let message = (error||{}).message || error.toString();
     if (message.match(/ProgressEvent/)) {
       message = 'Unable to retrieve this file. Check JS console and browser network tab.'
