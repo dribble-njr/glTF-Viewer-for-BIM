@@ -28,7 +28,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 // 提供参数设置
 import { GUI } from 'dat.gui'
 
-import throttle from '../utils/throttle'
+import { throttle, traverseMaterials } from '../utils'
 
 // glTF texture types. `envMap` is deliberately omitted, as it's used internally
 // by the loader but not part of the glTF format.
@@ -179,8 +179,8 @@ class Viewer {
     const intersects = this.raycaster.intersectObjects(this.scene.children)
 
     // FIXME LOD 时选中只有在最高等级才生效
-    console.log(this.intersected === intersects[0].object)
-    console.log(this.intersected)
+    // console.log(this.intersected === intersects[0].object)
+    // console.log(this.intersected)
 
     if (intersects.length > 0) {
       if (this.intersected != intersects[0].object) {
@@ -268,7 +268,6 @@ class Viewer {
         // DRACOLoader.releaseDecoderModule();
 
         resolve(gltf)
-        getSceneModelFaceNum(this.scene)
 
         // 解析属性
         let file
@@ -561,48 +560,6 @@ class Viewer {
   }
 }
 
-function traverseMaterials(object, callback) {
-  object.traverse((node) => {
-    if (!node.isMesh) return
-    const materials = Array.isArray(node.material)
-      ? node.material
-      : [node.material]
-    materials.forEach(callback)
-  })
-}
 
-/**
- * 获取场景内模型数量、顶点数及面片数
- * 计算了重复顶点数？
- * @param {Scene} view ：需要计算的场景视图即scene
- */
- function getSceneModelFaceNum(view) {
-  let scene = view
-  let vertices = 0 //模型顶点
-  let triangles = 0 // 模型面片
-  let meshs = 0
-
-  for (let index = 0; index < scene.children.length; index++) {
-    let object = scene.children[index]
-
-    object.traverseVisible(function(object) {
-      if (object instanceof Mesh) {
-        let geometry = object.geometry
-        meshs++
-        
-        if (geometry instanceof BufferGeometry && geometry.attributes.position) {
-          vertices += geometry.attributes.position.count
-          if (geometry.index !== null) {
-            triangles += geometry.index.count / 3
-          } else {
-            triangles += geometry.attributes.position.count / 3
-          }
-        }
-      }
-    })
-  }
-
-  console.log('模型顶点数: ' + vertices, '模型面片数: ' + triangles, 'mesh数：' + meshs)
-}
 
 export default Viewer

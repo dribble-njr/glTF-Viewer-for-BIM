@@ -1,5 +1,7 @@
 import Viewer from './viewer.js'
 
+import { getSceneModelFaceNum } from '../utils'
+
 class App {
   constructor(el) {
     this.el = el
@@ -113,11 +115,18 @@ class App {
       if (typeof rootFile === 'object') URL.revokeObjectURL(fileURL)
     }
 
+    const preTime = new Date().getTime()
+
     viewer
       .load(fileURL, rootPath, files)
       .catch((e) => this.onError(e))
-      .then(() => {
+      .then((gltf) => {
+        const curTime = new Date().getTime()
+        console.log(`共耗费 ${(curTime - preTime) / 1000} s`)
         cleanup()
+
+        const scene = gltf.scene || gltf.scenes[0]
+        getSceneModelFaceNum(scene)
       })
   }
 
@@ -146,13 +155,21 @@ class App {
 
     this.showSpinner()
 
+    const preTime = new Date().getTime()
+
     viewer
       .loadLod()
       .catch((e) => this.onError(e))
-      .then((res) => {
-        console.log(res)
+      .then((lod) => {
+        const curTime = new Date().getTime()
+        console.log(`基础 lod 共耗费 ${(curTime - preTime) / 1000} s`)
+
+        console.log('-------')
+        console.log(lod)
         this.hideSpinner()
       })
+
+
   }
 
   onError(error) {
