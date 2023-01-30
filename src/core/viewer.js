@@ -51,6 +51,10 @@ class Viewer {
   constructor(el) {
     this.el = el
 
+    // 循环渲染和非循环渲染交替控制
+    this.renderEnable = false
+    this.timeOut = null
+
     this.lights = []
     this.content = null
     // 面板
@@ -92,6 +96,13 @@ class Viewer {
     this.controls.autoRotate = false
     this.controls.autoRotateSpeed = -10
     this.controls.screenSpacePanning = true
+    // 交互时循环渲染
+    this.controls.addEventListener('start', () => {
+      this.timeRender(1000)
+    })
+    this.controls.addEventListener('end', () => {
+      this.timeRender(1000)
+    })
 
     // TODO 添加背景 https://github.com/rc-bellergy/three-vignette-background
 
@@ -134,14 +145,29 @@ class Viewer {
 
   animate() {
     requestAnimationFrame(this.animate)
-
+    
     this.controls.update()
     this.stats.update()
-    this.render()
+    
+    if (this.renderEnable) {
+      this.render()
+    }
+  }
+
+  timeRender(time) {
+    this.renderEnable = true
+
+    if (this.timeOut) {
+      clearTimeout(this.timeOut)
+    }
+    this.timeOut = setTimeout(() => {
+      this.renderEnable = false
+    }, time)
   }
 
   render() {
     if (this.lod) this.lod.update(this.camera)
+
     this.renderer.render(this.scene, this.camera)
     if (this.state.grid) {
       this.axesCamera.position.copy(this.camera.position)
@@ -302,13 +328,13 @@ class Viewer {
       dracoLoader.setDecoderPath('/draco/')
       loader.setDRACOLoader(dracoLoader)
 
-      loader.load('models/lod-15.gltf', (gltf) => {
+      loader.load('models/lod3.glb', (gltf) => {
         details[0] = gltf.scene || gltf.scenes[0]
 
-        loader.load('models/lod-8.gltf', (gltf) => {
+        loader.load('models/lod2.glb', (gltf) => {
           details[1] = gltf.scene || gltf.scenes[0]
           
-          loader.load('models/lod-0.gltf', (gltf) => {
+          loader.load('models/lod1.glb', (gltf) => {
             details[2] = gltf.scene || gltf.scenes[0]
             
             this.lod = new LOD()
@@ -321,7 +347,8 @@ class Viewer {
 					  }
 
             this.lod.updateMatrix()
-            this.lod.matrixAutoUpdate = false
+            this.lod.matrixAutoUpdate = true
+            window.lod = this.lod
             this.setContent(this.lod)
 
             resolve(this.lod)
@@ -559,7 +586,5 @@ class Viewer {
     })
   }
 }
-
-
 
 export default Viewer
