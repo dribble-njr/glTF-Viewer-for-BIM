@@ -26,6 +26,11 @@ body {
   z-index: 0;
 }
 
+.table {
+  background-color: #ccc;
+  width: 200px;
+}
+
 .axes {
 	width: 100px;
 	height: 100px;
