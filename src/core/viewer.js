@@ -604,10 +604,15 @@ class Viewer {
     // Display controls.
     const dispFolder = gui.addFolder('Display')
     const wireframeCtrl = dispFolder.add(this.state, 'wireframe')
-    wireframeCtrl.onChange(() => this.updateDisplay())
+    wireframeCtrl.onChange(() => {
+      this.updateDisplay()
+      this.render()
+    })
     const gridCtrl = dispFolder.add(this.state, 'grid')
-    gridCtrl.onChange(() => this.updateDisplay())
-    dispFolder.add(this.controls, 'autoRotate')
+    gridCtrl.onChange(() => {
+      this.updateDisplay()
+      this.render()
+    })
 
     // Lighting controls.
     const lightFolder = gui.addFolder('Lighting')
@@ -621,6 +626,7 @@ class Viewer {
         traverseMaterials(this.content, (material) => {
           material.needsUpdate = true
         })
+        this.render()
       })
     ;[
       lightFolder.add(this.state, 'addLights').listen(),
@@ -628,7 +634,10 @@ class Viewer {
       lightFolder.addColor(this.state, 'ambientColor'),
       lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
       lightFolder.addColor(this.state, 'directColor'),
-    ].forEach((ctrl) => ctrl.onChange(() => this.updateLights()))
+    ].forEach((ctrl) => ctrl.onChange(() => {
+      this.updateLights()
+      this.render()
+    }))
 
     // Stats.
     const perfFolder = gui.addFolder('Performance')
