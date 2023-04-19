@@ -177,8 +177,6 @@ class Viewer {
   }
 
   render() {
-    if (this.lod) this.lod.update(this.camera)
-
     this.renderer.render(this.scene, this.camera)
     if (this.state.grid) {
       this.axesCamera.position.copy(this.camera.position)
@@ -349,10 +347,16 @@ class Viewer {
   }
 
   loadLod() {
-    return new Promise((resolve, reject) => {
-      // 3 个等级的细节层次
-      const details = new Array(3).fill(new Object3D())
+    this.lod = new LOD()
+    const levels = [
+      { distance: 0, lod: [0, 1, 2] },
+      { distance: 100000, lod: [1, 2] },
+      { distance: 200000, lod: [2] },
+    ]
+    // 3 个等级的细节层次
+    const details = new Array(3).fill(new Object3D())
 
+    return new Promise((resolve) => {
       const loader = new GLTFLoader()
       loader.setCrossOrigin('anonymous')
 
@@ -371,20 +375,38 @@ class Viewer {
           loader.load('models/lod1.glb', (gltf) => {
             details[2]= gltf.scene || gltf.scenes[0]
 
-            this.lod = new LOD()
-
-            for (let i = 0; i < details.length; i++) {
-              details[i].updateMatrix()
-              details[i].matrixAutoUpdate = false
-            }
-
+            // 将不同层级的模型添加到 LOD 对象中
             this.lod.addLevel(details[2], 200000)
             this.lod.addLevel(details[1], 100000)
-            this.lod.addLevel(details[0], 50000)
+            this.lod.addLevel(details[0], 0)
 
-            this.lod.updateMatrix()
-            this.lod.matrixAutoUpdate = true
             window.lod = this.lod
+            
+            // 禁用自动更新
+            this.lod.autoUpdate = false
+
+            // 监听相机位置变化
+            this.controls.addEventListener('change', () => {
+              const distance = this.camera.position.distanceTo(this.scene.position)
+              console.log('相机视点距离', distance)
+              let levelIndex = 0
+
+              for (let i = 0; i < levels.length; i++) {
+                if (distance > levels[i].distance) {
+                  levelIndex = i
+                } else {
+                  break
+                }
+              }
+
+              const lodIndexes = levels[levelIndex].lod
+              console.log('需要渲染的层级', lodIndexes)
+
+              for (let i = 0; i < levels.length; i++) {
+                this.lod.levels[i].object.visible = lodIndexes.indexOf(i) !== -1
+              }
+            })
+
             this.setContent(this.lod)
 
             resolve(this.lod)
@@ -414,17 +436,13 @@ class Viewer {
     this.camera.near = size / 100
     this.camera.far = size * 100
     this.camera.updateProjectionMatrix()
-    console.log('包围盒大小', size)
 
     // 根据包围盒设置相机位置
     this.camera.position.copy(center)
     this.camera.position.x += size * 1.0
-    this.camera.position.y += size * 2.0
+    this.camera.position.y += size * 1.0
     this.camera.position.z += size * 1.0
     this.camera.lookAt(center)
-
-    const distance = this.camera.position.distanceTo(this.lod.position)
-    console.log('相机到物体的距离', distance)
 
     this.axesCamera.position.copy(this.camera.position)
     this.axesCamera.lookAt(this.axesScene.position)
