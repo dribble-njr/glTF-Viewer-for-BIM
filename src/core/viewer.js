@@ -172,7 +172,8 @@ class Viewer {
       clearTimeout(this.timeOut)
     }
     this.timeOut = setTimeout(() => {
-      // this.renderEnable = false
+      this.renderEnable = false
+      this.renderer.render(this.scene, this.camera)
     }, time)
   }
 
