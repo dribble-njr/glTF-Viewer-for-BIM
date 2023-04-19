@@ -5,9 +5,15 @@
 ## 快速开始
 
 ```shell
-npm install
+pnpm install
 npm run dev
 ```
+
+## 特点
+
+- [X] LOD
+- [x] 非实时渲染
+- [ ] Web Worker
 
 ## 参考资源
 
