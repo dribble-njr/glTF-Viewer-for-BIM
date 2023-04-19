@@ -11,12 +11,17 @@ class App {
     this.dropEl = document.querySelector('.dropzone')
     this.lodLinkEl = document.querySelector('#lod-link')
     this.lodViewerEl = null
+    this.workerLinkEl = document.querySelector('#worker-link')
+    this.workerViewerEl = null
     
     this.createDropzone()
     this.hideSpinner()
 
     this.lodLinkEl.addEventListener('click', () => {
       this.createLod()
+    })
+    this.workerLinkEl.addEventListener('click', () => {
+      this.createWorker()
     })
   }
 
@@ -168,8 +173,36 @@ class App {
         console.log(lod)
         this.hideSpinner()
       })
+  }
 
+  createWorker() {
+    this.workerViewerEl = document.createElement('div')
+    this.workerViewerEl.classList.add('viewer')
+    this.dropEl.innerHTML = ''
+    this.dropEl.appendChild(this.workerViewerEl)
 
+    if (this.viewer) {
+      this.viewer.clear()
+      this.viewer = null
+    }
+
+    const viewer = new Viewer(this.workerViewerEl)
+
+    this.showSpinner()
+
+    const preTime = new Date().getTime()
+
+    viewer
+      .loadWorker()
+      .catch((e) => this.onError(e))
+      .then((lod) => {
+        const curTime = new Date().getTime()
+        console.log(`worker lod 共耗费 ${(curTime - preTime) / 1000} s`)
+
+        console.log('-------')
+        console.log(lod)
+        this.hideSpinner()
+      })
   }
 
   onError(error) {
