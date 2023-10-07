@@ -4,10 +4,53 @@
 
 ## 快速开始
 
+本项目使用 pnpm 作为包管理工具，需确保安装了 pnpm：
+
+```shell
+npm install -g pnpm
+```
+
+启动项目：
+
 ```shell
 pnpm install
-npm run dev
+pnpm dev
 ```
+
+目录结构：
+
+```shell
+├── README.md
+├── node_modules
+├── package.json
+├── pnpm-lock.yaml
+├── public
+│   └── index.html
+├── src
+│   ├── assets
+│   │   ├── css
+│   │   │   └── common.css
+│   │   ├── draco												- draco 依赖
+│   │   │   ├── draco_decoder.js
+│   │   │   ├── draco_decoder.wasm
+│   │   │   ├── draco_encoder.js
+│   │   │   └── draco_wasm_wrapper.js
+│   │   └── models											- 模型文件，LOD 加载时需要按此方式命名
+│   │       ├── all.glb
+│   │       ├── lod1.glb
+│   │       ├── lod2.glb
+│   │       └── lod3.glb
+│   ├── core														- 核心代码
+│   │   ├── app.js											- app
+│   │   ├── viewer.js										- three.js viewer
+│   │   └── worker.js
+│   ├── index.js
+│   └── utils														- 工具函数
+│       └── index.js
+└── webpack.config.js
+```
+
+渲染模型：将转换后的 gltf 文件或 glb 文件拖拽进拖拽区域，等待片刻即可，**如不出现模型，点击一下屏幕即可（已知 bug）**。
 
 ## 特点
 
