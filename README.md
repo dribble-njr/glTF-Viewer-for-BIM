@@ -30,22 +30,22 @@ pnpm dev
 │   ├── assets
 │   │   ├── css
 │   │   │   └── common.css
-│   │   ├── draco	    - draco 依赖
+│   │   ├── draco - draco 依赖
 │   │   │   ├── draco_decoder.js
 │   │   │   ├── draco_decoder.wasm
 │   │   │   ├── draco_encoder.js
 │   │   │   └── draco_wasm_wrapper.js
-│   │   └── models     - 模型文件，LOD 加载时需要按此方式命名
+│   │   └── models - 模型文件，LOD 加载时需要按此方式命名
 │   │       ├── all.glb
 │   │       ├── lod1.glb
 │   │       ├── lod2.glb
 │   │       └── lod3.glb
-│   ├── core           - 核心代码
-│   │   ├── app.js     - app
-│   │   ├── viewer.js  - three.js viewer
+│   ├── core - 核心代码
+│   │   ├── app.js - app
+│   │   ├── viewer.js - three.js viewer
 │   │   └── worker.js
 │   ├── index.js
-│   └── utils				   - 工具函数
+│   └── utils	- 工具函数
 │       └── index.js
 └── webpack.config.js
 ```
